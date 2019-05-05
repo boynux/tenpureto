@@ -10,13 +10,30 @@ addons:
     packages:
       - libgmp-dev
 
-before_install:
-  - mkdir -p ~/.local/bin
-  - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+services:
+  - docker
 
-install:
-  - stack --no-terminal --install-ghc test --only-dependencies
+stages:
+  - test
+  - package
 
-script:
-  - stack --no-terminal test
+jobs:
+  include:
+
+    - stage: test
+      before_install:
+        - mkdir -p ~/.local/bin
+        - export PATH=$HOME/.local/bin:$PATH
+        - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+      install:
+        - stack --no-terminal --install-ghc test --only-dependencies
+      script:
+        - stack --no-terminal test
+
+    - stage: package
+      name: Amazon Linux 2
+      env: OS=amzn2
+      script: cd package && ./package.sh $OS
+    - name: Ubuntu 18.04
+      env: OS=ubuntu18.04
+      script: cd package && ./package.sh $OS

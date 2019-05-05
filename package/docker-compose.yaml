@@ -1,0 +1,15 @@
+version: "2.4"
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.${VENDOR}
+    image: tenpureto-package-agent:${VENDOR}
+    environment:
+      - VENDOR
+    volumes:
+      - ..:/code:ro
+      - ../package.yaml:/build/config/common.yaml:ro
+      - ./recipe.rb:/build/recipe.rb:ro
+      - ./pkg:/pkg
+    working_dir: /build
